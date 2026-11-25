@@ -33,9 +33,9 @@ void NVSUtils::copyNamespace(const char *src_ns, const char *dst_ns) {
   nvs_erase_all(h_dst);
 
   // Iterate over all entries in source namespace
-  nvs_iterator_t it = NULL;
-  err = nvs_entry_find("nvs", src_ns, NVS_TYPE_ANY, &it);
-  while (err == ESP_OK) {
+  nvs_iterator_t it = nvs_entry_find("nvs", src_ns, NVS_TYPE_ANY);
+
+  while (it != NULL) {
     nvs_entry_info_t info;
     nvs_entry_info(it, &info);
 
@@ -114,7 +114,7 @@ void NVSUtils::copyNamespace(const char *src_ns, const char *dst_ns) {
       break;
     }
     }
-    err = nvs_entry_next(&it);
+    it = nvs_entry_next(it);
   }
   nvs_release_iterator(it);
 
