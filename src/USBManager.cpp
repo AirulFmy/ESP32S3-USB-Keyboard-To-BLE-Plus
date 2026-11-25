@@ -5,6 +5,11 @@ KeyboardReportCallback USBManager::_keyboardCb = nullptr;
 
 static QueueHandle_t hid_host_event_queue;
 
+static uint8_t last_led_state = 0xFF;
+static hid_host_device_handle_t keyboard_handle = NULL;
+extern volatile uint8_t g_ledState;
+static void updateKeyboardLEDs(); 
+
 typedef struct {
   hid_host_device_handle_t hid_device_handle;
   hid_host_driver_event_t event;
@@ -62,6 +67,8 @@ void USBManager::hid_host_task(void *pvParameters) {
   hid_host_event_queue = xQueueCreate(10, sizeof(hid_host_event_queue_t));
 
   while (true) {
+    // to ensure it always grab the latest HID report from connected device
+    updateKeyboardLEDs();
     if (xQueueReceive(hid_host_event_queue, &evt_queue, pdMS_TO_TICKS(50))) {
       hid_host_device_event(evt_queue.hid_device_handle, evt_queue.event,
                             evt_queue.arg);
@@ -109,6 +116,7 @@ void USBManager::hid_host_device_event(
       hid_class_request_set_protocol(hid_device_handle,
                                      HID_REPORT_PROTOCOL_BOOT);
       if (HID_PROTOCOL_KEYBOARD == dev_params.proto) {
+        keyboard_handle = hid_device_handle;
         hid_class_request_set_idle(hid_device_handle, 0, 0);
       }
     }
@@ -152,6 +160,8 @@ void USBManager::hid_host_interface_callback(
   case HID_HOST_INTERFACE_EVENT_DISCONNECTED:
     Serial.printf("[USB] %s disconnected\n",
                   hid_proto_name_str[dev_params.proto]);
+    // to set the HID report to keyboard back to empty LED state
+    keyboard_handle = NULL;
     hid_host_device_close(hid_device_handle);
     break;
 
@@ -163,4 +173,29 @@ void USBManager::hid_host_interface_callback(
   default:
     break;
   }
+}
+
+static void updateKeyboardLEDs()
+{
+    if (keyboard_handle == NULL)
+        return;
+
+    if (g_ledState == last_led_state)
+        return;
+
+    uint8_t led_report = g_ledState;
+
+    esp_err_t err = hid_class_request_set_report(
+        keyboard_handle,
+        0x02,      // OUTPUT report
+        0x00,      // Report ID
+        &led_report,
+        1);
+
+    if (err == ESP_OK) {
+        Serial.printf("[USB] LED Update 0x%02X\n", led_report);
+        last_led_state = led_report;
+    } else {
+        Serial.printf("[USB] LED Update Failed: %d\n", err);
+    }
 }
