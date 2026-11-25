@@ -22,12 +22,12 @@
 
 Additional Features implemented so far
 
-✅ Caps Lock LED synchronization
-✅ Num Lock LED synchronization
-✅ Scroll Lock LED synchronization
-✅ Fixed NVS compatibility issue
-✅ Fixed ESP32-S3 runtime crash
-✅ Tested on ESP32-S3-N16R8
+* ✅ Caps Lock LED synchronization
+* ✅ Num Lock LED synchronization
+* ✅ Scroll Lock LED synchronization
+* ✅ Fixed NVS compatibility issue
+* ✅ Fixed ESP32-S3 runtime crash
+* ✅ Tested on ESP32-S3-N16R8 DevKit
 
 ## Disclaimer
 
