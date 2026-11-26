@@ -31,6 +31,18 @@ void Bridge::begin() {
 
 void Bridge::loop() {
   static unsigned long lastStatus = 0;
+  
+  // START | Feature: To ensure that the bonds are saved after a successful BLE connection, we can add a temporary check here. 
+  // This is currently as a workaround and later will be replaced with a proper event-driven approach in the future.
+  static bool saved = false;
+  if (_bleManager.isConnected() && !saved) {
+    delay(5000);
+    Serial.println("[TEST] Delayed save");
+    NVSUtils::saveSlotBonds(_currentSlot);
+    saved = true;
+  }
+  // END | Feature: To ensure that the bonds are saved after a successful BLE connection, we can add a temporary check here.
+
   if (millis() - lastStatus > 5000) {
     lastStatus = millis();
     bool connected = _bleManager.isConnected();

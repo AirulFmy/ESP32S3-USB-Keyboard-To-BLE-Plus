@@ -27,7 +27,7 @@ Additional Features implemented so far
 * ✅ Scroll Lock LED synchronization
 * ✅ Fixed NVS compatibility issue
 * ✅ Fixed ESP32-S3 runtime crash
-* ✅ Tested on ESP32-S3-N16R8 DevKit
+* ✅ Fixed BLE bond persistence across reboots
 
 ## Disclaimer
 
